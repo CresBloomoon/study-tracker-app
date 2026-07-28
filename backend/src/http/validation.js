@@ -49,6 +49,18 @@ function requireNonEmptyString(value, fieldName, { maxLength } = {}) {
   return trimmed;
 }
 
+function requirePositiveIntArray(value, fieldName) {
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new ApiError(400, "VALIDATION_ERROR", `${fieldName} must be a non-empty array`);
+  }
+  for (const v of value) {
+    if (!Number.isInteger(v) || v <= 0) {
+      throw new ApiError(400, "VALIDATION_ERROR", `${fieldName} must contain only positive integers`);
+    }
+  }
+  return value;
+}
+
 function optionalString(value, fieldName, { maxLength } = {}) {
   if (value == null || value === "") return null;
   if (typeof value !== "string") {
@@ -68,4 +80,5 @@ module.exports = {
   requireDate,
   requireNonEmptyString,
   optionalString,
+  requirePositiveIntArray,
 };

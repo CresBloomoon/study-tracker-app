@@ -9,6 +9,8 @@ const { remindersRouter } = require("./routes/reminders.routes");
 const { reportRouter } = require("./routes/report.routes");
 const { milestonesRouter } = require("./routes/milestones.routes");
 const { subjectTasksRouter } = require("./routes/subjectTasks.routes");
+const { reviewRecipesRouter } = require("./routes/reviewRecipes.routes");
+const { reviewSeriesRouter } = require("./routes/reviewSeries.routes");
 
 function createApp() {
   const app = express();
@@ -23,6 +25,8 @@ function createApp() {
   app.use("/api/report", reportRouter());
   app.use("/api", milestonesRouter());
   app.use("/api", subjectTasksRouter());
+  app.use("/api", reviewRecipesRouter());
+  app.use("/api", reviewSeriesRouter());
 
   // 404
   app.use((req, res) => {
