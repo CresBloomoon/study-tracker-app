@@ -68,6 +68,11 @@ function formatJstDateKey(d) {
   return toJstDateKey(d);
 }
 
+/** 「今日」のJST日範囲を [startUtc, endUtc) で返す */
+function getJstTodayRange(now = new Date()) {
+  return jstDateToUtcRange(toJstDateKey(now));
+}
+
 /**
  * "YYYY-MM-DD" <-> Date（@db.Date 列用。タイムゾーンを持たない暦日として扱う）
  */
@@ -91,4 +96,5 @@ module.exports = {
   formatJstDateKey,
   parsePlainDate,
   formatPlainDate,
+  getJstTodayRange,
 };
