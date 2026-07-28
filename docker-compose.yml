@@ -79,3 +79,7 @@ volumes:
   study_tracker_app_pgdata:
   study_tracker_app_node_modules:
   study_tracker_app_frontend_node_modules:
+
+networks:
+  default:
+    name: study-tracker-app-network
