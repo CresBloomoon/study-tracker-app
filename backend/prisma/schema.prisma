@@ -1,0 +1,225 @@
+// ================================
+// Prisma schema
+// ================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ================================
+// Enums
+// ================================
+
+enum TimerState {
+  RUNNING
+  PAUSED
+}
+
+//タイマーモード（手動入力はTimerSessionを使わずStudyLog直行でも良いが、将来統一の余地を残す）
+enum TimerMode {
+  POMODORO
+  STOPWATCH
+}
+
+enum PomodoroPhase {
+  FOCUS
+  BREAK
+  DONE
+}
+
+enum PomodoroAwaitingAfterPhase {
+  BREAK
+  FOCUS
+}
+
+// ================================
+// Models
+// ================================
+
+model Subject {
+  id         String     @id @default(uuid()) @db.Uuid
+  name       String     @unique @db.VarChar(100)
+  colorHex   String     @db.VarChar(7)
+  sortOrder  Int        @default(0)
+  isArchived Boolean    @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  timerSessions TimerSession[]
+  studyLogs     StudyLog[]
+  subjectTasks  SubjectTask[]
+  reviewSeries  ReviewSeries[]
+
+  @@index([isArchived])
+  @@index([sortOrder])
+}
+
+model TimerSession {
+  id        String     @id @default(uuid()) @db.Uuid
+  state     TimerState @default(RUNNING)
+
+  subjectId String?    @db.Uuid
+  subject   Subject?   @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+
+  startedAt DateTime   @default(now())
+  endedAt   DateTime?
+
+  recordedAt DateTime?  // StudyLogを作った（=記録した）時刻。二重記録防止用
+
+  createdAt DateTime   @default(now())
+
+  clientRequestId String? @unique @db.Uuid
+
+  mode       TimerMode?
+  configJson Json?         // 開始時点の設定スナップショット（例：{focusMin, breakMin, totalSets}）
+  phase      PomodoroPhase?
+
+  setIndex   Int?          // 1始まり（例：1/3）
+  totalSets  Int?
+
+  phaseStartedAt DateTime?
+  phaseEndsAt DateTime?
+  awaitingAfterPhase PomodoroAwaitingAfterPhase?
+
+  advanceRequests TimerAdvanceRequest[]
+
+  @@index([state])
+  @@index([startedAt])
+  @@index([subjectId])
+  @@index([mode])
+  @@index([phase])
+}
+
+model TimerAdvanceRequest {
+  id              String   @id @default(uuid()) @db.Uuid
+  timerSessionId  String   @db.Uuid
+  timerSession    TimerSession @relation(fields: [timerSessionId], references: [id], onDelete: Cascade)
+
+  clientRequestId String   @unique @db.Uuid
+  createdAt       DateTime @default(now())
+
+  @@index([timerSessionId])
+  @@index([createdAt])
+}
+
+model StudyLog {
+  id              String   @id @default(uuid()) @db.Uuid
+
+  subjectId       String?  @db.Uuid
+  subject         Subject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+
+  startedAt       DateTime
+  endedAt         DateTime
+  durationSec     Int
+
+  note            String?  @db.VarChar(1000)
+
+  linkedReminderId String?  @db.Uuid
+  linkedReminder   Reminder? @relation(fields: [linkedReminderId], references: [id], onDelete: SetNull)
+
+  clientRequestId String?  @unique @db.Uuid
+
+  createdAt       DateTime @default(now())
+
+  @@index([subjectId])
+  @@index([startedAt])
+  @@index([createdAt])
+  @@index([linkedReminderId])
+}
+
+model Reminder {
+  id        String   @id @default(uuid()) @db.Uuid
+  title     String   @db.VarChar(200)
+  dueAt     DateTime
+  doneAt    DateTime?
+  isDone    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subjectTaskId String?      @db.Uuid
+  subjectTask   SubjectTask? @relation(fields: [subjectTaskId], references: [id], onDelete: SetNull)
+
+  reviewSeriesId String?       @db.Uuid
+  reviewSeries   ReviewSeries? @relation(fields: [reviewSeriesId], references: [id], onDelete: SetNull)
+
+  linkedFromStudyLogs StudyLog[]
+
+  @@index([dueAt])
+  @@index([doneAt])
+  @@index([isDone])
+  @@index([subjectTaskId])
+  @@index([reviewSeriesId])
+}
+
+// ================================
+// 学習スケジュール（ガント）・復習レシピ
+// ================================
+
+model Milestone {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String   @db.VarChar(200)
+  deadlineDate DateTime @db.Date
+  createdAt    DateTime @default(now())
+
+  subjectTasks SubjectTask[]
+}
+
+model SubjectTask {
+  id          String    @id @default(uuid()) @db.Uuid
+  milestoneId String    @db.Uuid
+  milestone   Milestone @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  subjectId   String    @db.Uuid
+  subject     Subject   @relation(fields: [subjectId], references: [id])
+  startDate   DateTime  @db.Date
+  endDate     DateTime  @db.Date
+  createdAt   DateTime  @default(now())
+
+  reminders    Reminder[]
+  reviewSeries ReviewSeries[]
+
+  @@index([milestoneId])
+  @@index([subjectId])
+}
+
+model ReviewRecipe {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String   @db.VarChar(200)
+  intervalDays Int[]
+  createdAt    DateTime @default(now())
+
+  reviewSeries ReviewSeries[]
+}
+
+model ReviewSeries {
+  id            String        @id @default(uuid()) @db.Uuid
+  title         String        @db.VarChar(200)
+  subjectId     String        @db.Uuid
+  subject       Subject       @relation(fields: [subjectId], references: [id])
+  baseDate      DateTime      @db.Date
+  intervalDays  Int[]
+  recipeId      String?       @db.Uuid
+  recipe        ReviewRecipe? @relation(fields: [recipeId], references: [id], onDelete: SetNull)
+  subjectTaskId String?       @db.Uuid
+  subjectTask   SubjectTask?  @relation(fields: [subjectTaskId], references: [id], onDelete: SetNull)
+  createdAt     DateTime      @default(now())
+
+  reminders Reminder[]
+
+  @@index([subjectId])
+  @@index([recipeId])
+  @@index([subjectTaskId])
+}
+
+model Notification {
+  id        String   @id @default(uuid()) @db.Uuid
+  code      String   @db.VarChar(100)
+  message   String   @db.VarChar(500)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
