@@ -1,0 +1,81 @@
+services:
+  db:
+    image: postgres:16
+    container_name: study-tracker-app-db
+    environment:
+      POSTGRES_USER: cpa
+      POSTGRES_PASSWORD: cpa
+      POSTGRES_DB: study_tracker_app
+    ports:
+      - "5435:5432"
+    volumes:
+      - study_tracker_app_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cpa -d study_tracker_app"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    image: node:20-alpine
+    container_name: study-tracker-app-backend
+    working_dir: /app
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./backend:/app
+      - study_tracker_app_node_modules:/app/node_modules
+    environment:
+      DATABASE_URL: postgresql://cpa:cpa@db:5432/study_tracker_app?schema=public
+      PORT: "3000"
+    command: >
+      sh -lc '
+        node -v && npm -v &&
+        if [ ! -d node_modules ] || [ ! -f node_modules/.installed ]; then
+          echo "[bootstrap] npm ci (install deps)..." &&
+          npm ci &&
+          touch node_modules/.installed;
+        else
+          echo "[bootstrap] deps already installed";
+        fi &&
+        echo "[bootstrap] prisma generate..." &&
+        npx prisma generate &&
+        echo "[bootstrap] start server..." &&
+        node index.js
+      '
+
+  frontend:
+    image: node:20-alpine
+    container_name: study-tracker-app-frontend
+    working_dir: /app
+    depends_on:
+      - backend
+    ports:
+      - "5175:3000"
+    volumes:
+      - ./frontend:/app
+      - study_tracker_app_frontend_node_modules:/app/node_modules
+    environment:
+      BACKEND_ORIGIN: http://backend:3000
+      PORT: "3000"
+    command: >
+      sh -lc '
+        node -v && npm -v &&
+        if [ ! -d node_modules ] || [ ! -f node_modules/.installed ]; then
+          echo "[bootstrap] npm install (no lockfile)..." &&
+          npm install &&
+          touch node_modules/.installed;
+        else
+          echo "[bootstrap] deps already installed";
+        fi &&
+        echo "[bootstrap] start next dev..." &&
+        npm run dev -- -H 0.0.0.0 -p 3000
+      '
+
+volumes:
+  study_tracker_app_pgdata:
+  study_tracker_app_node_modules:
+  study_tracker_app_frontend_node_modules:
