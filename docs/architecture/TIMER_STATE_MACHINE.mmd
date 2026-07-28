@@ -1,0 +1,71 @@
+stateDiagram-v2
+  direction LR
+
+  %% =========================
+  %% Timer State (outer)
+  %% =========================
+  [*] --> IDLE : アプリ起動/記録後
+
+  note left of IDLE
+    IDLE は概念状態。
+    DB上に TimerSession 行が存在しない状態を指す。
+    永続 state enum には含めない。
+  end note
+
+
+  IDLE --> RUNNING : Start(mode, subjectId, config)
+  RUNNING --> STOPPED : TogglePause（中央ボタン）
+  STOPPED --> RUNNING : ToggleResume（中央ボタン）
+  STOPPED --> IDLE : Record（記録ボタン / StudyLog生成）\n+ セッション終了
+
+  %% =========================
+  %% Invariants / 禁止ルール
+  %% =========================
+  note left of RUNNING
+    【禁止遷移】
+    - RUNNING中の Start（多重起動）は禁止
+    - RUNNING中の Record は禁止（UIでも非活性）
+  end note
+
+  note left of STOPPED
+    【許可】
+    - STOPPED中のみ Record（記録）を許可
+  end note
+
+
+  %% =========================
+  %% Pomodoro Phase (inner)
+  %% =========================
+  state RUNNING {
+    [*] --> MODE_CHOICE
+
+    state MODE_CHOICE <<choice>>
+    MODE_CHOICE --> STOPWATCH : mode=STOPWATCH
+    MODE_CHOICE --> POMODORO : mode=POMODORO
+
+    STOPWATCH --> STOPWATCH : （経過し続ける）
+
+    state POMODORO {
+      [*] --> FOCUS
+
+      %% FOCUS
+      FOCUS --> DONE_AWAIT_BREAK : phaseEndsAt到達\n（FOCUSは超過もカウント対象）
+      DONE_AWAIT_BREAK --> BREAK : Advance（ユーザ明示操作）
+
+      %% BREAK
+      BREAK --> DONE_AWAIT_FOCUS : phaseEndsAt到達\n（BREAKの超過はカウントしない）
+      DONE_AWAIT_FOCUS --> FOCUS : Advance（次セットへ）\nsetIndex++
+
+      %% 完了判定（概念）
+      DONE_AWAIT_FOCUS --> [*] : setIndex==totalSets\n（pomodoroDone=true）
+    }
+  }
+
+  %% =========================
+  %% Notes
+  %% =========================
+  note right of RUNNING
+    StudyLog生成は Record のみ。
+    Record は STOPPED のときだけ許可（RUNNING中は不可）。
+    TogglePause/ToggleResume は中央ボタンのトグル操作。
+  end note

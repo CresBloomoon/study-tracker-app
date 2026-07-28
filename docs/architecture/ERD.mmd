@@ -1,0 +1,32 @@
+erDiagram
+  subjects ||--o{ timer_sessions : "科目に紐づくタイマーセッション"
+  subjects ||--o{ study_logs : "科目に紐づく学習ログ"
+  timer_sessions ||--o{ study_logs : "（任意）セッションからログが生成される"
+
+  subjects {
+    uuid id PK
+    text name UNIQUE
+    text color_hex
+    int sort_order
+    bool is_active
+  }
+
+  timer_sessions {
+    uuid id PK
+    uuid subject_id FK
+    uuid client_request_id UNIQUE
+    timestamptz started_at
+    timestamptz stopped_at
+    smallint status
+  }
+
+  study_logs {
+    uuid id PK
+    uuid subject_id FK
+    uuid client_request_id UNIQUE
+    uuid timer_session_id FK
+    timestamptz started_at
+    timestamptz ended_at
+    int duration_minutes
+    date study_date_jst
+  }
