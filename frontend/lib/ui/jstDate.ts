@@ -16,3 +16,8 @@ export function shiftDateKey(dateKey: string, deltaDays: number): string {
   d.setUTCDate(d.getUTCDate() + deltaDays);
   return d.toISOString().slice(0, 10);
 }
+
+/** "YYYY-MM-DD"（@db.Date列、バックエンドのparsePlainDateと同じ規約）をUTCタイムスタンプ(ms)に変換する。ガントの位置計算用 */
+export function dateKeyToTimestamp(dateKey: string): number {
+  return new Date(`${dateKey}T00:00:00.000Z`).getTime();
+}
