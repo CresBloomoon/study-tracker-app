@@ -1,10 +1,10 @@
 // backend/src/usecases/StopTimerUseCase.js
 const { roundUpMinutes } = require("../domain/time");
+const { TimerSessionRepository } = require("../repositories/TimerSessionRepository");
 
 class StopTimerUseCase {
-  constructor({ timerSessionRepo, studyLogRepo }) {
-    this.timerSessionRepo = timerSessionRepo;
-    this.studyLogRepo = studyLogRepo;
+  constructor(prisma) {
+    this.timerSessionRepo = new TimerSessionRepository(prisma);
   }
 
   /**
@@ -28,7 +28,7 @@ class StopTimerUseCase {
           endedAt: endedAt,
           durationSec,
           roundedMinutes: roundUpMinutes(durationSec),
-          studyLogId: already.studyLogId ?? null,
+          studyLogId: null,
           idempotent: true,
         };
       }
@@ -55,8 +55,6 @@ class StopTimerUseCase {
     const paused = await this.timerSessionRepo.pauseRunningById({
       id: latest.id,
       endedAt,
-      durationSec,
-      roundedMinutes,
       clientRequestId: clientRequestId ?? null,
     });
 
@@ -65,9 +63,9 @@ class StopTimerUseCase {
       sessionId: paused.id,
       startedAt: paused.startedAt,
       endedAt: paused.endedAt,
-      durationSec: paused.durationSec,
-      roundedMinutes: paused.roundedMinutes,
-      studyLogId: paused.studyLogId ?? null,
+      durationSec,
+      roundedMinutes,
+      studyLogId: null,
     };
   }
 }

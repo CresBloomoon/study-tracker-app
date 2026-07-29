@@ -21,6 +21,11 @@ class StudyLogRepository {
     });
   }
 
+  // タイマーRecord操作からの作成。StudyLogにtimerSessionId列は無い（TimerSession側がstudyLogIdで参照する一方向リンク）ため受け取っても持たない。
+  async createFromTimerSession({ subjectId, startedAt, endedAt, durationSec, clientRequestId, note, linkedReminderId }) {
+    return this.create({ subjectId, startedAt, endedAt, durationSec, clientRequestId, note, linkedReminderId });
+  }
+
   /**
    * JST日付でログ取得（v1は startedAt 基準でその日判定）
    */
@@ -177,6 +182,36 @@ class StudyLogRepository {
       map.set(id, (map.get(id) ?? 0) + min);
     }
     return map;
+  }
+
+  // 期間で絞らない全期間版（科目別累計棒グラフ用）
+  async sumRoundedMinutesBySubjectAllTime() {
+    const logs = await this.prisma.studyLog.findMany({
+      select: {
+        subjectId: true,
+        durationSec: true,
+      },
+    });
+
+    const map = new Map(); // subjectId -> minutes
+    for (const l of logs) {
+      const id = l.subjectId ?? "UNASSIGNED";
+      const sec = Math.max(0, l.durationSec ?? 0);
+      const min = Math.ceil(sec / 60);
+      map.set(id, (map.get(id) ?? 0) + min);
+    }
+    return map;
+  }
+
+  // 月次・年次推移グラフ用：全件のstartedAt/durationSecのみ取得し、バケット化はusecase側で行う
+  async findAllStartedAtAndDuration() {
+    return this.prisma.studyLog.findMany({
+      select: {
+        startedAt: true,
+        durationSec: true,
+      },
+      orderBy: { startedAt: "asc" },
+    });
   }
 }
 

@@ -5,6 +5,7 @@ const { getPrisma } = require("../infra/prisma");
 const { requireUuid, requireDate } = require("../http/validation");
 const { CreateSubjectTaskUseCase } = require("../usecases/CreateSubjectTaskUseCase");
 const { ListSubjectTasksUseCase } = require("../usecases/ListSubjectTasksUseCase");
+const { ListSubjectTaskRemindersUseCase } = require("../usecases/ListSubjectTaskRemindersUseCase");
 
 function subjectTasksRouter() {
   const router = Router();
@@ -35,6 +36,22 @@ function subjectTasksRouter() {
 
       const uc = new ListSubjectTasksUseCase(prisma);
       const result = await uc.execute({ milestoneId });
+
+      ok(res, result);
+    } catch (e) {
+      next(e);
+    }
+  });
+
+  // ガント展開パネル用：期限日を含まない、チェックボックス+タイトルのみのリスト
+  router.get("/subject-tasks/:id/reminders", async (req, res, next) => {
+    try {
+      const prisma = getPrisma();
+
+      const subjectTaskId = requireUuid(req.params.id, "id");
+
+      const uc = new ListSubjectTaskRemindersUseCase(prisma);
+      const result = await uc.execute({ subjectTaskId });
 
       ok(res, result);
     } catch (e) {

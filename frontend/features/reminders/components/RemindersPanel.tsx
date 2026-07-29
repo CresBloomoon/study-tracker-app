@@ -1,27 +1,24 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import AnimatedCheckbox from "@/features/reminders/components/AnimatedCheckbox";
+import UiCheckbox from "@/components/ui/UiCheckbox";
 import {
   Reminder,
-  getReminderSummary,
   listReminders,
   createReminder,
+  markDone,
+  markUndone,
 } from "@/lib/ui/remindersApi";
+import { jstDateKeyOf } from "@/lib/ui/jstDate";
 
 type SideFilter = "today" | "all" | "done";
-
-function jstDateKey(d: Date) {
-  const jst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
-  return jst.toISOString().slice(0, 10);
-}
 
 export default function RemindersPanel() {
   const [side, setSide] = useState<SideFilter>("today");
   const [search, setSearch] = useState("");
   const [searchDebounced, setSearchDebounced] = useState("");
-  const [items, setItems] = useState<Reminder[]>([]);
-  const [counts, setCounts] = useState({ today: 0, all: 0, done: 0 });
+  const [openList, setOpenList] = useState<Reminder[]>([]);
+  const [doneList, setDoneList] = useState<Reminder[]>([]);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -50,39 +47,14 @@ export default function RemindersPanel() {
     setLoading(true);
     setErr(null);
     try {
-      const [summary, allList] = await Promise.all([
-        getReminderSummary(),
-        listReminders("all"),
+      // status=open のときだけサーバーが「今日期限を先頭に」ソートし isOverdue を付与する（Step3）。
+      // status=all で一括取得すると isOverdue が乗らないため、open/doneを別々に取得する。
+      const [open, done] = await Promise.all([
+        listReminders("open"),
+        listReminders("done"),
       ]);
-
-      const todayKey = summary.ranges.todayJst;
-
-      const openList = allList.filter((r) => !r.isDone);
-      const doneList = allList.filter((r) => r.isDone);
-
-      const todayOpenCount = openList.filter(
-        (r) => jstDateKey(new Date(r.dueAt)) === todayKey
-      ).length;
-
-      setCounts({
-        today: todayOpenCount,
-        all: allList.length,
-        done: doneList.length,
-      });
-
-      let base: Reminder[] = allList;
-
-      if (side === "done") {
-        base = doneList;
-      } else if (side === "all") {
-        base = allList;
-      } else {
-        base = openList.filter(
-          (r) => jstDateKey(new Date(r.dueAt)) === todayKey
-        );
-      }
-
-      setItems(base);
+      setOpenList(open);
+      setDoneList(done);
     } catch (e: any) {
       setErr(e?.message ?? "failed");
     } finally {
@@ -92,8 +64,24 @@ export default function RemindersPanel() {
 
   useEffect(() => {
     refresh();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [side]);
+  }, []);
+
+  const todayKey = useMemo(() => jstDateKeyOf(new Date()), []);
+
+  const counts = useMemo(
+    () => ({
+      today: openList.filter((r) => jstDateKeyOf(new Date(r.dueAt)) === todayKey).length,
+      all: openList.length + doneList.length,
+      done: doneList.length,
+    }),
+    [openList, doneList, todayKey]
+  );
+
+  const items: Reminder[] = useMemo(() => {
+    if (side === "done") return doneList;
+    if (side === "all") return [...openList, ...doneList];
+    return openList.filter((r) => jstDateKeyOf(new Date(r.dueAt)) === todayKey);
+  }, [side, openList, doneList, todayKey]);
 
   const filtered = useMemo(() => {
     const q = searchDebounced.trim().toLowerCase();
@@ -116,6 +104,12 @@ export default function RemindersPanel() {
     } catch (e: any) {
       setErr(e?.message ?? "create failed");
     }
+  }
+
+  async function toggleDone(r: Reminder) {
+    if (r.isDone) await markUndone(r.id);
+    else await markDone(r.id);
+    await refresh();
   }
 
   return (
@@ -251,17 +245,28 @@ export default function RemindersPanel() {
             <div style={{ display: "grid", gap: 10 }}>
               {filtered.map((r) => (
                 <div key={r.id} style={row()}>
-                  {/* AnimatedCheckbox is responsible for API calls; here we just refresh */}
-                  <AnimatedCheckbox id={r.id} isDone={r.isDone} onChanged={refresh} />
+                  <UiCheckbox
+                    checked={r.isDone}
+                    onToggle={() => toggleDone(r)}
+                    ariaLabel={`toggle ${r.title}`}
+                  />
 
                   <div style={{ display: "grid", gap: 4, flex: 1 }}>
                     <div style={{ fontWeight: 700 }}>{r.title}</div>
-                    <div style={{ opacity: 0.8, fontSize: 12 }}>
+                    <div
+                      style={{
+                        opacity: r.isOverdue ? 1 : 0.8,
+                        fontSize: 12,
+                        color: r.isOverdue ? "#ff6b6b" : undefined,
+                        fontWeight: r.isOverdue ? 700 : 400,
+                      }}
+                    >
                       {new Date(r.dueAt).toLocaleDateString()}{" "}
                       {new Date(r.dueAt).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
+                      {r.isOverdue ? "（期限超過）" : ""}
                     </div>
                   </div>
 

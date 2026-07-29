@@ -60,24 +60,12 @@ class TimerSessionRepository {
     });
   }
 
-  async stopRunningById({ id, endedAt, durationSec, roundedMinutes }) {
-    return this.prisma.timerSession.update({
-      where: { id },
-      data: {
-        state: "PAUSED",
-        endedAt,
-        durationSec,
-        roundedMinutes,
-      },
-    });
-  }
-
-  async markRecorded({ id, recordedAt, studyLogId }) {
+  // studyLogIdはTimerSessionの列ではない（StudyLog側からのリンクを持たない設計）
+  async markRecorded({ id, recordedAt }) {
     return this.prisma.timerSession.update({
       where: { id },
       data: {
         recordedAt,
-        studyLogId,
       },
     });
   }
@@ -89,23 +77,26 @@ class TimerSessionRepository {
     });
   }
 
-  async pauseRunningById({ id, endedAt, durationSec, roundedMinutes, clientRequestId }) {
-    return this.updateById(id, {
-      state: "PAUSED",
-      endedAt,
-      durationSec,
-      roundedMinutes,
-      clientRequestId: clientRequestId ?? null,
+  // durationSec/roundedMinutesはTimerSessionの列ではない（都度startedAt/endedAtから計算する値のため持たない）
+  async pauseRunningById({ id, endedAt, clientRequestId }) {
+    return this.updateById({
+      id,
+      data: {
+        state: "PAUSED",
+        endedAt,
+        clientRequestId: clientRequestId ?? null,
+      },
     });
   }
 
   async resumePausedById(id, newStartedAt) {
-    return this.updateById(id, {
-      state: "RUNNING",
-      startedAt: newStartedAt,
-      endedAt: null,
-      durationSec: null,
-      roundedMinutes: null,
+    return this.updateById({
+      id,
+      data: {
+        state: "RUNNING",
+        startedAt: newStartedAt,
+        endedAt: null,
+      },
     });
   }
 }

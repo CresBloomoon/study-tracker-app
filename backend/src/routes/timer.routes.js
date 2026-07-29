@@ -101,9 +101,10 @@ function timerRouter() {
       const prisma = getPrisma();
       const clientRequestId = requireUuid(req.body.clientRequestId, "clientRequestId");
       const note = req.body.note ?? null;
+      const linkedReminderId = optionalUuid(req.body.linkedReminderId, "linkedReminderId");
 
       const uc = new RecordTimerUseCase(prisma);
-      const result = await uc.execute({ clientRequestId, note });
+      const result = await uc.execute({ clientRequestId, note, linkedReminderId });
 
       ok(res, result);
     } catch (e) {

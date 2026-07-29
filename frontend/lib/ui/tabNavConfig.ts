@@ -1,10 +1,9 @@
 export const TAB_NAV = {
   items: [
-    { href: "/dashboard", label: "学習時間" },
-    { href: "/timer", label: "タイマー" },
     { href: "/reminders", label: "リマインダ" },
-    { href: "/calendar", label: "カレンダー" },
-    { href: "/projects", label: "プロジェクト" },
+    { href: "/review", label: "振り返り" },
+    { href: "/timer", label: "タイマー" },
+    { href: "/schedule", label: "学習スケジュール" },
   ] as const,
 
   // layout (numbers)

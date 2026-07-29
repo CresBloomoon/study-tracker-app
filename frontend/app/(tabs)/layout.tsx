@@ -27,7 +27,7 @@ export default function TabsLayout({ children }: { children: React.ReactNode }) 
 
   const activeHref = useMemo(() => {
     const found = items.find((t) => t.href === currentPath);
-    return found?.href ?? items[0]?.href ?? "/dashboard";
+    return found?.href ?? items[0]?.href ?? "/reminders";
   }, [currentPath, items]);
 
   const measure = () => {

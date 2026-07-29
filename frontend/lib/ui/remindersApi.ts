@@ -6,6 +6,10 @@ export type Reminder = {
     doneAt: string | null;
     createdAt: string;
     updatedAt: string;
+    subjectTaskId?: string | null;
+    reviewSeriesId?: string | null;
+    // status=open のときのみサーバーが付与するフラグ（Step3）。それ以外は未定義。
+    isOverdue?: boolean;
   };
   
   export type ReminderSummary = {

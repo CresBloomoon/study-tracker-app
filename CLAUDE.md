@@ -88,3 +88,17 @@ Mutating timer endpoints require a client-supplied `clientRequestId` (UUID) for 
 - `docs/architecture/TIMER_STATE_MACHINE.mmd` — state diagram companion to ADR-015.
 - `docs/adr/` — chronological design decisions; check for one before assuming a design question is still open.
 - `docs/api/timer.md`, `docs/api/reminders.md` — endpoint-level API docs.
+
+## 開発ログの運用
+
+- 実装順序の各Step（例：`study-app-implementation-prompt-v3.md`に記載のStep1〜7）を完了したタイミングでは、`docs/dev-log/`配下に、そのStepで行った作業内容をmdファイルとして残すことを提案すること。
+- ファイル名は`docs/dev-log/YYYY-MM-stepN-短い説明.md`の形式とする（例: `docs/dev-log/2026-07-step5-timer-reminders-ui.md`）。
+- 内容は最低限、以下を含める：
+  - 対象Stepと日付
+  - 概要（何を目的にした作業か）
+  - 変更ファイル一覧と各ファイルの責務
+  - ADRの要否判断とその理由（要否に関わらず記載する）
+  - ビルド確認結果（該当する場合）
+  - 次のステップ
+- `docs/adr/`とは役割が異なることを、各devlogファイルの冒頭に明記する（「これは設計判断の記録（ADR）ではなく、作業内容の記録（開発ログ）である」という趣旨）。
+- Step完了時にこのdevlog作成をこちらから提案すること。作成するかどうかは依頼者の判断に委ねてよい。

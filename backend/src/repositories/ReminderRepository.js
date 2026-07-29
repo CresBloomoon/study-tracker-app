@@ -93,7 +93,7 @@ class ReminderRepository {
         : status === "all"
           ? {}
           : { isDone: false }; // default open
-  
+
     return this.prisma.reminder.findMany({
       where,
       orderBy: [{ dueAt: "asc" }, { createdAt: "asc" }],
@@ -108,6 +108,33 @@ class ReminderRepository {
         subjectTaskId: true,
         reviewSeriesId: true,
       },
+    });
+  }
+
+  // ガントの展開パネル用：期限日を持たない、チェックボックス+タイトルのみのリスト
+  async findBySubjectTaskId(subjectTaskId) {
+    return this.prisma.reminder.findMany({
+      where: { subjectTaskId },
+      orderBy: [{ isDone: "asc" }, { createdAt: "asc" }],
+      select: {
+        id: true,
+        title: true,
+        isDone: true,
+      },
+    });
+  }
+
+  async countTotalForSubjectTask(subjectTaskId) {
+    return this.prisma.reminder.count({ where: { subjectTaskId } });
+  }
+
+  async countDoneForSubjectTask(subjectTaskId) {
+    return this.prisma.reminder.count({ where: { subjectTaskId, isDone: true } });
+  }
+
+  async countRecentlyCompletedForSubjectTask(subjectTaskId, sinceDate) {
+    return this.prisma.reminder.count({
+      where: { subjectTaskId, isDone: true, doneAt: { gte: sinceDate } },
     });
   }
 

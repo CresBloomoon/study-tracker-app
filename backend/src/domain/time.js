@@ -73,6 +73,16 @@ function getJstTodayRange(now = new Date()) {
   return jstDateToUtcRange(toJstDateKey(now));
 }
 
+/** Date(UTC) -> JST年月キー YYYY-MM */
+function toJstMonthKey(d) {
+  return toJstDateKey(d).slice(0, 7);
+}
+
+/** Date(UTC) -> JST年キー YYYY */
+function toJstYearKey(d) {
+  return toJstDateKey(d).slice(0, 4);
+}
+
 /**
  * "YYYY-MM-DD" <-> Date（@db.Date 列用。タイムゾーンを持たない暦日として扱う）
  */
@@ -97,4 +107,6 @@ module.exports = {
   parsePlainDate,
   formatPlainDate,
   getJstTodayRange,
+  toJstMonthKey,
+  toJstYearKey,
 };
