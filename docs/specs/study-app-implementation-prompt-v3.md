@@ -177,5 +177,11 @@ items: [
 **Step8**：復習レシピ（`ReviewRecipe`/`ReviewSeries`）のフロントエンドUI（設定画面・ReviewSeries作成画面）
    - 機能要件5には元々UI要件が明記されていたが、実装順序リストへの記載漏れがあったため、Step8として追加（2026-07-30）
 
+**Step9（着手時期未定）**：`Subject` / `Milestone` / `SubjectTask` / `Reminder`等、`ReviewRecipe`以外の既存リソースへの削除（DELETE）機能の展開
+   - `ReviewRecipe`の削除実装（Step8）をこのリポジトリにおける削除パターンの参照実装とする
+     （repository層に`deleteById`を追加 → usecase層で存在チェック → routeで`{ success: true }`を返却、という構成）
+   - 現時点では他リソースの削除ニーズが顕在化していないため未着手。着手時期は未定で、
+     必要になったタイミングで本Stepとして着手する（2026-07-30、方針決定）
+
 各ステップの実装後、何を実装したか・どのファイルにどんな責務を持たせたか・大きな設計判断をした場合はADRの要否も含めて簡潔に説明すること。
 
