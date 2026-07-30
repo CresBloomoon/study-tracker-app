@@ -114,6 +114,9 @@ Mutating timer endpoints require a client-supplied `clientRequestId` (UUID) for 
 
 ## コミット後のpush運用
 
-- コミット後は、原則としてそのままリモート(origin/現在のブランチ)にgit pushする。
-  単独開発のため、force-push等の複雑な調整は不要。ディスク障害時のバックアップも兼ねる。
-- 明示的に「pushしないで」と指示された場合を除き、コミットとpushはセットで行うこと。
+- コミットは引き続きClaude Codeが行う。
+- git pushは常にユーザー(まーくん)が手動で実行する。Claude Codeはpushを実行しない
+  （このコンテナ環境にSSH鍵を置かない方針のため。バイブコーディング全般における
+  セキュリティ意識維持のための原則的な判断）。
+- コミット完了後は、コミットハッシュとメッセージを報告し、「pushしてください」と
+  一言添えること。
