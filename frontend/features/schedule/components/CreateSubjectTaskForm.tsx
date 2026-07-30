@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createSubjectTask } from "@/lib/ui/scheduleApi";
 import { listAllSubjects, type SubjectMeta } from "@/lib/ui/reviewApi";
-import { toggleBtnStyle, formStyle, inputStyle, submitBtnStyle, cancelBtnStyle } from "./ScheduleForm.styles";
+import { toggleBtnStyle, formStyle, inputStyle, submitBtnStyle, cancelBtnStyle } from "@/lib/ui/formStyles";
 
 type Props = {
   milestoneId: string;

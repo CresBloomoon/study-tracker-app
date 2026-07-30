@@ -1,3 +1,8 @@
+// frontend/lib/ui/formStyles.ts
+//
+// トグル式の小さな作成/編集フォーム（「+ 追加」ボタン→インラインフォーム）で共通利用するスタイル定数。
+// Step7のScheduleForm.styles.tsとして最初に作られたが、Step8で同じパターンのフォームが増えたため
+// 共有位置に統合した。新しいフォームもここを使うこと（重複させない）。
 import type { CSSProperties } from "react";
 
 export const toggleBtnStyle: CSSProperties = {

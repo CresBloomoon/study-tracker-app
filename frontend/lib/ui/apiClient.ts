@@ -100,3 +100,26 @@ export function apiPost<T>(
     headers: opts.headers,
   });
 }
+
+export function apiPatch<T>(
+  path: string,
+  body?: any,
+  opts: ApiGetOptions = {}
+) {
+  return apiFetch<T>(path, {
+    method: "PATCH",
+    body: JSON.stringify(body ?? {}),
+    cache: opts.cache,
+    next: opts.next,
+    headers: opts.headers,
+  });
+}
+
+export function apiDelete<T>(path: string, opts: ApiGetOptions = {}) {
+  return apiFetch<T>(path, {
+    method: "DELETE",
+    cache: opts.cache,
+    next: opts.next,
+    headers: opts.headers,
+  });
+}

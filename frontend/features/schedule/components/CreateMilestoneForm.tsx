@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createMilestone } from "@/lib/ui/scheduleApi";
-import { toggleBtnStyle, formStyle, inputStyle, submitBtnStyle, cancelBtnStyle } from "./ScheduleForm.styles";
+import { toggleBtnStyle, formStyle, inputStyle, submitBtnStyle, cancelBtnStyle } from "@/lib/ui/formStyles";
 
 type Props = {
   onCreated: () => void;

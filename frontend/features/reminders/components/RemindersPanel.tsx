@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import UiCheckbox from "@/components/ui/UiCheckbox";
 import {
   Reminder,
@@ -152,6 +153,15 @@ export default function RemindersPanel() {
             count={counts.done}
             onClick={() => setSide("done")}
           />
+        </div>
+
+        <div style={{ marginTop: 16, paddingTop: 12, borderTop: "1px solid var(--line)", display: "grid", gap: 8 }}>
+          <Link href="/reminders/recipes" style={sideLink()}>
+            復習レシピ設定
+          </Link>
+          <Link href="/reminders/series/new" style={sideLink()}>
+            復習シリーズを作成
+          </Link>
         </div>
       </div>
 
@@ -321,6 +331,19 @@ function card(): React.CSSProperties {
     borderRadius: 16,
     padding: 14,
     background: "rgba(255,255,255,0.02)",
+  };
+}
+
+function sideLink(): React.CSSProperties {
+  return {
+    display: "block",
+    padding: "8px 10px",
+    borderRadius: 10,
+    border: "1px solid var(--line)",
+    color: "var(--fg)",
+    textDecoration: "none",
+    fontSize: 13,
+    opacity: 0.85,
   };
 }
 
