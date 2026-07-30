@@ -5,6 +5,7 @@ import type { SubjectTaskWithProgress } from "@/lib/ui/scheduleApi";
 import type { SubjectMeta } from "@/lib/ui/reviewApi";
 import { dateKeyToTimestamp } from "@/lib/ui/jstDate";
 import SubjectTaskExpandPanel from "./SubjectTaskExpandPanel";
+import PaceIndicator from "./PaceIndicator";
 
 type Props = {
   task: SubjectTaskWithProgress;
@@ -14,8 +15,8 @@ type Props = {
   onProgressChanged: () => void;
 };
 
-// バー本体+進捗バッジ（完了数/全体数）。タップで展開し、チェックボックス+タイトルのリストを表示する。
-// 順調/遅延アイコンは次チャンクで追加する。
+// バー本体+進捗バッジ（完了数/全体数）+順調/遅延アイコン。
+// タップで展開し、チェックボックス+タイトルのリストを表示する。
 export default function SubjectTaskBar({ task, subject, rangeStartMs, totalSpanMs, onProgressChanged }: Props) {
   const [expanded, setExpanded] = useState(false);
 
@@ -45,12 +46,18 @@ export default function SubjectTaskBar({ task, subject, rangeStartMs, totalSpanM
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              gap: 6,
               color: "#fff",
               fontSize: 11,
               fontWeight: 700,
             }}
           >
-            {task.progress.doneCount}/{task.progress.totalCount}
+            <span>
+              {task.progress.doneCount}/{task.progress.totalCount}
+            </span>
+            <span style={paceChipStyle}>
+              <PaceIndicator status={task.progress.paceStatus} />
+            </span>
           </button>
         </div>
       </div>
@@ -59,3 +66,14 @@ export default function SubjectTaskBar({ task, subject, rangeStartMs, totalSpanM
     </div>
   );
 }
+
+// バーの背景色（科目カラー）が何であってもペースの色（緑/赤/灰）が読めるよう、白背景のチップに乗せる
+const paceChipStyle: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  width: 16,
+  height: 16,
+  borderRadius: "50%",
+  background: "rgba(255,255,255,0.92)",
+};
