@@ -9,6 +9,7 @@ import SubjectTaskBar from "./SubjectTaskBar";
 type Props = {
   milestone: MilestoneDetail;
   subjectMap: Map<string, SubjectMeta>;
+  onProgressChanged: () => void;
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -30,7 +31,7 @@ function clampPct(v: number) {
 }
 
 // マイルストーンの締切日を赤い縦線で示し、その下に科目バーを並べるガント本体
-export default function GanttChart({ milestone, subjectMap }: Props) {
+export default function GanttChart({ milestone, subjectMap, onProgressChanged }: Props) {
   const { rangeStartMs, rangeEndMs } = useMemo(() => computeRange(milestone), [milestone]);
   const totalSpanMs = Math.max(rangeEndMs - rangeStartMs, DAY_MS);
   const deadlineLeftPct = clampPct(((dateKeyToTimestamp(milestone.deadlineDate) - rangeStartMs) / totalSpanMs) * 100);
@@ -64,6 +65,7 @@ export default function GanttChart({ milestone, subjectMap }: Props) {
                 subject={subjectMap.get(task.subjectId)}
                 rangeStartMs={rangeStartMs}
                 totalSpanMs={totalSpanMs}
+                onProgressChanged={onProgressChanged}
               />
             ))}
           </div>

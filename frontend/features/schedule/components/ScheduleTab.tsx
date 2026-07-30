@@ -50,7 +50,7 @@ export default function ScheduleTab() {
 
       {detail && (
         <>
-          <GanttChart milestone={detail} subjectMap={subjectMap} />
+          <GanttChart milestone={detail} subjectMap={subjectMap} onProgressChanged={refreshDetail} />
           <div style={{ marginTop: 16 }}>
             <CreateSubjectTaskForm milestoneId={detail.id} onCreated={refreshDetail} />
           </div>
