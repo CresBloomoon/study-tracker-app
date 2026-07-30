@@ -111,3 +111,9 @@ Mutating timer endpoints require a client-supplied `clientRequestId` (UUID) for 
 - フロントエンドとバックエンドをまたぐ実装（APIクライアント関数の追加等）では、
   HTTPメソッド（GET/POST/PATCH/DELETE等）がフロントエンド側の呼び出しとバックエンド側の
   ルート定義で一致しているか、実装完了時に必ず突き合わせて確認すること。
+
+## コミット後のpush運用
+
+- コミット後は、原則としてそのままリモート(origin/現在のブランチ)にgit pushする。
+  単独開発のため、force-push等の複雑な調整は不要。ディスク障害時のバックアップも兼ねる。
+- 明示的に「pushしないで」と指示された場合を除き、コミットとpushはセットで行うこと。
