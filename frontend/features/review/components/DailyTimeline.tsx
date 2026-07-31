@@ -5,7 +5,8 @@ import DailyTimelineHeader from "./DailyTimelineHeader";
 import StudyLogEntryRow from "./StudyLogEntryRow";
 
 export default function DailyTimeline() {
-  const { dateKey, data, subjectMap, loading, err, goPrevDay, goNextDay } = useDailyTimeline();
+  const { dateKey, data, subjectMap, reminderMap, toggleReminderDone, loading, err, goPrevDay, goNextDay } =
+    useDailyTimeline();
 
   return (
     <div style={cardStyle}>
@@ -29,6 +30,8 @@ export default function DailyTimeline() {
                 key={item.id}
                 item={item}
                 subject={item.subjectId ? subjectMap.get(item.subjectId) : undefined}
+                linkedReminder={item.linkedReminderId ? reminderMap.get(item.linkedReminderId) : undefined}
+                onToggleReminder={toggleReminderDone}
               />
             ))
           )}

@@ -1,6 +1,8 @@
 "use client";
 
 import type { StudyLogItem, SubjectMeta } from "@/lib/ui/reviewApi";
+import type { Reminder } from "@/lib/ui/remindersApi";
+import UiCheckbox from "@/components/ui/UiCheckbox";
 
 function fmtTimeRange(startedAt: string, endedAt: string) {
   const s = new Date(startedAt);
@@ -16,9 +18,11 @@ function fmtDurationMinutes(sec: number) {
 type Props = {
   item: StudyLogItem;
   subject?: SubjectMeta;
+  linkedReminder?: Reminder;
+  onToggleReminder?: (reminder: Reminder) => void | Promise<void>;
 };
 
-export default function StudyLogEntryRow({ item, subject }: Props) {
+export default function StudyLogEntryRow({ item, subject, linkedReminder, onToggleReminder }: Props) {
   return (
     <div style={rowStyle}>
       <span style={{ ...dotStyle, background: subject?.colorHex ?? "#6b7280" }} />
@@ -28,6 +32,16 @@ export default function StudyLogEntryRow({ item, subject }: Props) {
           <span style={{ opacity: 0.7, fontSize: 12 }}>{fmtTimeRange(item.startedAt, item.endedAt)}</span>
         </div>
         {item.note && <div style={{ opacity: 0.75, fontSize: 12 }}>{item.note}</div>}
+        {linkedReminder && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2 }}>
+            <UiCheckbox
+              checked={linkedReminder.isDone}
+              onToggle={() => onToggleReminder?.(linkedReminder)}
+              ariaLabel={`toggle ${linkedReminder.title}`}
+            />
+            <span style={{ opacity: 0.75, fontSize: 12 }}>{linkedReminder.title}</span>
+          </div>
+        )}
       </div>
       <div style={{ opacity: 0.85, fontVariantNumeric: "tabular-nums" }}>{fmtDurationMinutes(item.durationSec)}</div>
     </div>
