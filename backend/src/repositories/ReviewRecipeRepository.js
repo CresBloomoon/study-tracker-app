@@ -43,6 +43,11 @@ class ReviewRecipeRepository {
       select: { id: true, name: true, intervalDays: true, createdAt: true },
     });
   }
+
+  // ReviewSeries.recipeId は onDelete: SetNull のため、削除してもReviewSeries側は連鎖削除されない
+  async deleteById(id) {
+    await this.prisma.reviewRecipe.delete({ where: { id } });
+  }
 }
 
 module.exports = { ReviewRecipeRepository };

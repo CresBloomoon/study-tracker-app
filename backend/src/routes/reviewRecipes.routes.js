@@ -6,6 +6,7 @@ const { requireUuid, requireNonEmptyString, requirePositiveIntArray } = require(
 const { CreateReviewRecipeUseCase } = require("../usecases/CreateReviewRecipeUseCase");
 const { ListReviewRecipesUseCase } = require("../usecases/ListReviewRecipesUseCase");
 const { UpdateReviewRecipeUseCase } = require("../usecases/UpdateReviewRecipeUseCase");
+const { DeleteReviewRecipeUseCase } = require("../usecases/DeleteReviewRecipeUseCase");
 
 function reviewRecipesRouter() {
   const router = Router();
@@ -55,6 +56,21 @@ function reviewRecipesRouter() {
       const result = await uc.execute({ id, name, intervalDays });
 
       ok(res, result);
+    } catch (e) {
+      next(e);
+    }
+  });
+
+  router.delete("/review-recipes/:id", async (req, res, next) => {
+    try {
+      const prisma = getPrisma();
+
+      const id = requireUuid(req.params.id, "id");
+
+      const uc = new DeleteReviewRecipeUseCase(prisma);
+      await uc.execute({ id });
+
+      ok(res, { success: true });
     } catch (e) {
       next(e);
     }
