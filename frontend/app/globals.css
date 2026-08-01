@@ -138,3 +138,9 @@ a {
   from { transform: translateY(-14px); opacity: 0; }
   to   { transform: translateY(-6px);  opacity: 1; }
 }
+
+/* === Toast通知（Toast.tsx） === */
+@keyframes toast-in {
+  from { transform: translate(-50%, 6px);  opacity: 0; }
+  to   { transform: translate(-50%, -6px); opacity: 1; }
+}
