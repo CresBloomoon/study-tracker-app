@@ -1,5 +1,6 @@
 // frontend/app/layout.tsx
 import "./globals.css";
+import { ToastProvider } from "@/lib/ui/useToast";
 
 export default function RootLayout({
   children,
@@ -8,7 +9,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja" data-theme="dark" suppressHydrationWarning>
-      <body>{children}</body>
+      <body>
+        <ToastProvider>{children}</ToastProvider>
+      </body>
     </html>
   );
 }
