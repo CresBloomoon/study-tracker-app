@@ -138,6 +138,11 @@ class ReminderRepository {
     });
   }
 
+  // StudyLog.linkedReminderId は onDelete: SetNull のため、削除してもStudyLog側は連鎖削除されない
+  async deleteById(id) {
+    await this.prisma.reminder.delete({ where: { id } });
+  }
+
 }
   
   module.exports = { ReminderRepository };
