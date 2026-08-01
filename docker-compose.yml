@@ -61,19 +61,8 @@ services:
     environment:
       BACKEND_ORIGIN: http://backend:3000
       PORT: "3000"
-    command: >
-      sh -lc '
-        node -v && npm -v &&
-        if [ ! -d node_modules ] || [ ! -f node_modules/.installed ]; then
-          echo "[bootstrap] npm install (no lockfile)..." &&
-          npm install &&
-          touch node_modules/.installed;
-        else
-          echo "[bootstrap] deps already installed";
-        fi &&
-        echo "[bootstrap] start next dev..." &&
-        npm run dev -- -H 0.0.0.0 -p 3000
-      '
+    # command は docker-compose.override.yml（開発モード、`docker compose up`で自動適用）
+    # または docker-compose.prod.yml（本番ビルドモード、-f で明示指定）で指定する
 
 volumes:
   study_tracker_app_pgdata:

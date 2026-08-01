@@ -1,0 +1,15 @@
+services:
+  frontend:
+    command: >
+      sh -lc '
+        node -v && npm -v &&
+        if [ ! -d node_modules ] || [ ! -f node_modules/.installed ]; then
+          echo "[bootstrap] npm install (no lockfile)..." &&
+          npm install &&
+          touch node_modules/.installed;
+        else
+          echo "[bootstrap] deps already installed";
+        fi &&
+        echo "[bootstrap] start next dev..." &&
+        npm run dev -- -H 0.0.0.0 -p 3000
+      '
