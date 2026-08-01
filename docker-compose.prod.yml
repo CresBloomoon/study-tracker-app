@@ -1,17 +1,7 @@
 services:
   frontend:
-    command: >
-      sh -lc '
-        node -v && npm -v &&
-        if [ ! -d node_modules ] || [ ! -f node_modules/.installed ]; then
-          echo "[bootstrap] npm install (no lockfile)..." &&
-          npm install &&
-          touch node_modules/.installed;
-        else
-          echo "[bootstrap] deps already installed";
-        fi &&
-        echo "[bootstrap] build next..." &&
-        npm run build &&
-        echo "[bootstrap] start next prod..." &&
-        npm run start -- -H 0.0.0.0 -p 3000
-      '
+    image: study-tracker-app-frontend:prod
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes: !reset []
