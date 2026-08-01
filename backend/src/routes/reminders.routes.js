@@ -1,11 +1,13 @@
 const { Router } = require("express");
 const { ok } = require("../http/respond");
 const { getPrisma } = require("../infra/prisma");
+const { requireUuid } = require("../http/validation");
 const { GetReminderSummaryUseCase } = require("../usecases/GetReminderSummaryUseCase");
 const { CreateReminderUseCase } = require("../usecases/CreateReminderUseCase");
 const { MarkReminderDoneUseCase } = require("../usecases/MarkReminderDoneUseCase");
 const { MarkReminderUndoneUseCase } = require("../usecases/MarkReminderUndoneUseCase");
 const { ListRemindersUseCase } = require("../usecases/ListRemindersUseCase");
+const { DeleteReminderUseCase } = require("../usecases/DeleteReminderUseCase");
 const { validateCreateReminder } = require("./_validators/reminder");
 
 
@@ -75,11 +77,25 @@ function remindersRouter() {
     try {
       const prisma = getPrisma();
       const { id } = req.params;
-  
+
       const uc = new MarkReminderUndoneUseCase(prisma);
       const result = await uc.execute({ id });
-  
+
       res.status(200).json(result);
+    } catch (e) {
+      next(e);
+    }
+  });
+
+  router.delete("/reminders/:id", async (req, res, next) => {
+    try {
+      const prisma = getPrisma();
+      const id = requireUuid(req.params.id, "id");
+
+      const uc = new DeleteReminderUseCase(prisma);
+      await uc.execute({ id });
+
+      ok(res, { success: true });
     } catch (e) {
       next(e);
     }
