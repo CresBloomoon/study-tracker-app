@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import UiCheckbox from "@/components/ui/UiCheckbox";
 import {
@@ -9,12 +9,19 @@ import {
   createReminder,
   markDone,
   markUndone,
+  deleteReminder,
 } from "@/lib/ui/remindersApi";
 import { jstDateKeyOf } from "@/lib/ui/jstDate";
+import { useToast } from "@/lib/ui/useToast";
+import { TOAST_CONFIG } from "@/lib/ui/uiConfig";
 
 type SideFilter = "today" | "all" | "done";
 
 export default function RemindersPanel() {
+  const { showToast } = useToast();
+  // 削除の「元に戻す」猶予秒数の間、実際のAPI呼び出しを保留しておくタイマーをidごとに保持する
+  const pendingDeleteTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
   const [side, setSide] = useState<SideFilter>("today");
   const [search, setSearch] = useState("");
   const [searchDebounced, setSearchDebounced] = useState("");
@@ -111,6 +118,37 @@ export default function RemindersPanel() {
     if (r.isDone) await markUndone(r.id);
     else await markDone(r.id);
     await refresh();
+  }
+
+  function handleDelete(r: Reminder) {
+    // 画面上からは即座に除外するが、実際のDELETE APIは猶予秒数後まで呼ばない
+    if (r.isDone) {
+      setDoneList((prev) => prev.filter((x) => x.id !== r.id));
+    } else {
+      setOpenList((prev) => prev.filter((x) => x.id !== r.id));
+    }
+
+    const graceMs = TOAST_CONFIG.undoGraceSec * 1000;
+
+    pendingDeleteTimers.current[r.id] = setTimeout(async () => {
+      delete pendingDeleteTimers.current[r.id];
+      try {
+        await deleteReminder(r.id);
+      } catch (e: any) {
+        setErr(e?.message ?? "削除に失敗しました");
+        await refresh();
+      }
+    }, graceMs);
+
+    showToast("削除しました", {
+      durationMs: graceMs,
+      onUndo: async () => {
+        clearTimeout(pendingDeleteTimers.current[r.id]);
+        delete pendingDeleteTimers.current[r.id];
+        // サーバー側ではまだ削除されていないため、再取得すれば正しい並び順で復元される
+        await refresh();
+      },
+    });
   }
 
   return (
@@ -280,7 +318,25 @@ export default function RemindersPanel() {
                     </div>
                   </div>
 
-                  <div style={{ opacity: 0.7, fontSize: 12 }} />
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(r)}
+                    style={deleteBtn()}
+                    aria-label={`delete ${r.title}`}
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
                 </div>
               ))}
             </div>
@@ -395,6 +451,21 @@ function iconBtn(): React.CSSProperties {
     display: "grid",
     placeItems: "center",
     fontWeight: 900,
+  };
+}
+
+function deleteBtn(): React.CSSProperties {
+  return {
+    width: 28,
+    height: 28,
+    borderRadius: 10,
+    border: "1px solid var(--line)",
+    background: "transparent",
+    color: "#ff6b6b",
+    cursor: "pointer",
+    display: "grid",
+    placeItems: "center",
+    flexShrink: 0,
   };
 }
 
