@@ -66,4 +66,7 @@ export type Reminder = {
   export function markUndone(id: string): Promise<Reminder> {
     return fetchJson(`/api/reminders/${id}/undone`, { method: "PATCH" });
   }
-  
+
+  export function deleteReminder(id: string): Promise<{ success: true }> {
+    return fetchJson(`/api/reminders/${id}`, { method: "DELETE" });
+  }
