@@ -11,6 +11,7 @@ import {
 } from "@/lib/ui/timerApi";
 import { createStudyLog } from "@/lib/ui/studyLogApi";
 import { listReminders, type Reminder } from "@/lib/ui/remindersApi";
+import { generateUuid } from "@/lib/ui/uuid";
 import type { TimerUiMode } from "../components/TimerModeTabs";
 
 const IDLE_CURRENT: TimerCurrentResponse = { status: "IDLE", running: false, session: null };
@@ -135,14 +136,14 @@ export function useStudyTimer() {
             : undefined;
         await startTimer({
           subjectId: selectedSubjectId,
-          clientRequestId: crypto.randomUUID(),
+          clientRequestId: generateUuid(),
           mode: uiMode === "POMODORO" ? "POMODORO" : "STOPWATCH",
           config,
         });
       } else if (current.status === "RUNNING") {
-        await stopTimer({ clientRequestId: crypto.randomUUID() });
+        await stopTimer({ clientRequestId: generateUuid() });
       } else if (current.status === "PAUSED") {
-        await resumeTimer({ clientRequestId: crypto.randomUUID() });
+        await resumeTimer({ clientRequestId: generateUuid() });
       }
       await refreshCurrent();
     } catch (e: any) {
@@ -167,7 +168,7 @@ export function useStudyTimer() {
         await createStudyLog({
           subjectId: selectedSubjectId,
           durationSec: manualDurationSec,
-          clientRequestId: crypto.randomUUID(),
+          clientRequestId: generateUuid(),
           note: note.trim() || null,
           linkedReminderId,
         });
@@ -175,7 +176,7 @@ export function useStudyTimer() {
         setManualMinutes(0);
       } else {
         await recordTimer({
-          clientRequestId: crypto.randomUUID(),
+          clientRequestId: generateUuid(),
           note: note.trim() || null,
           linkedReminderId,
         });
