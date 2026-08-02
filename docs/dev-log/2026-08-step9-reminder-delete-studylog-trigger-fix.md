@@ -27,9 +27,9 @@
 - マイグレーション適用済み：`docker compose exec backend npx prisma migrate dev`で適用成功。`_prisma_migrations`テーブルに`20260801000000_allow_studylog_reminder_unlink`が記録されていることを確認済み。
 - 動作確認①（500エラー解消）：実データで、紐づく`StudyLog`を持つReminderを`DELETE /api/reminders/:id`で削除し、正常完了を確認。削除後、対応する`StudyLog.linkedReminderId`が`NULL`に更新されていることをDBで確認済み。
 - 動作確認②（不変性の回帰確認）：`StudyLog`への直接UPDATE（`note`カラム変更）が引き続きトリガーに拒否されることを、`BEGIN`/`UPDATE`/`ROLLBACK`のトランザクションで確認済み（`ERROR: StudyLog is immutable: UPDATE/DELETE are forbidden`）。実データへの変更は発生せず。
-- ブラウザでの目視確認（リマインダー画面から実際に1〜2件削除する操作）は未実施。まーくんが別途実施予定。
+- ブラウザでの目視確認（リマインダー画面から実際に1〜2件削除する操作）：完了（2026-08-02、まーくん実施）。DevToolsのNetworkタブで、チェック済み・未チェックどちらの状態のリマインダーも`DELETE`リクエストが200 OKで返ることを確認済み（「連結」というタイトルのリマインダーを含む）。
 
 ## 次のステップ
 
-- まーくんによるブラウザでの目視確認（リマインダー1〜2件の削除）。
+- Step9追加対応は全項目完了。
 - スコープ外の申し送り事項：`StudyLog.subjectId`（`Subject`への`onDelete: SetNull`）にも同種の潜在バグが存在することが判明済み。現時点では`DeleteSubjectUseCase`が存在せず未顕在化だが、将来Subject削除機能を実装する際に同じ設計判断（ADR-018と同様の例外追加）が必要になる見込み。

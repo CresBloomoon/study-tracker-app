@@ -9,7 +9,8 @@
 
 本メモの「3. 未実施・中断中の作業」のうち、1（動作確認①）・2（動作確認②）・4（ADR作成）は完了した。
 詳細は `docs/dev-log/2026-08-step9-reminder-delete-studylog-trigger-fix.md` と `docs/adr/ADR-018-studylog-immutable-exception-for-reminder-unlink.md` を参照。
-未完了なのは3（ブラウザでの目視確認、まーくんの手元作業）のみ。本メモは経緯の記録として残す。
+3（ブラウザでの目視確認、まーくんの手元作業）も完了（同日）。DevToolsのNetworkタブで、チェック済み・未チェックどちらの状態のリマインダーも`DELETE`リクエストが200 OKで返ることを確認済み（「連結」というタイトルのリマインダーを含む）。
+これでStep9追加対応は全項目完了。本メモは経緯の記録として残す。
 
 ## 1. 対応中のタスク概要
 
